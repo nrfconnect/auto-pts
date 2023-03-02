@@ -5186,13 +5186,13 @@
             <Name>TSPX_device_public_key</Name>
             <Description>IUT uses this public key for node. If the entry is invalid, an MMI will pop up to ask for a valid public key.(Default: F465E43FF23D3F1B9DC7DFC04DA8758184DBC966204796ECCF0D6CF5E16500CC0201D048BCBBD899EEEFC424164E33C201C2B010CA6B4D43A8A155CAD8ECB279)</Description>
             <Type>OCTETSTRING</Type>
-            <Value>F465E43FF23D3F1B9DC7DFC04DA8758184DBC966204796ECCF0D6CF5E16500CC0201D048BCBBD899EEEFC424164E33C201C2B010CA6B4D43A8A155CAD8ECB279</Value>
+            <Value>5B2AD8B034D80743536E7F1B2354FE0869F50E8F085BEA047119590F4E74AC67F0151EFBC531FBAB2673B1D1ADF78931F400D950E466D026FC2E7D090E2A1A0C</Value>
           </Row>
           <Row>
             <Name>TSPX_device_private_key</Name>
             <Description>IUT uses this private key for node. (Default: 529aa0670d72cd6497502ed473502b037e8803b5c60829a5a3caa219505530ba)</Description>
             <Type>OCTETSTRING</Type>
-            <Value>529aa0670d72cd6497502ed473502b037e8803b5c60829a5a3caa219505530ba</Value>
+            <Value>A60179DE5010F30CD8B8B173E2A7F945724D3AEF43A411909920FFF8108EED00</Value>
           </Row>
           <Row>
             <Name>TSPX_use_pb_gatt_bearer</Name>
