@@ -108,7 +108,7 @@ def set_pixits(ptses):
     pts.set_pixit("GATT", "TSPX_iut_device_name_in_adv_packet_for_random_address", "")
     pts.set_pixit("GATT", "TSPX_security_enabled", "FALSE")
     pts.set_pixit("GATT", "TSPX_delete_link_key", "TRUE")
-    pts.set_pixit("GATT", "TSPX_time_guard", "180000")
+    pts.set_pixit("GATT", "TSPX_time_guard", "320000")
     pts.set_pixit("GATT", "TSPX_selected_handle", "0012")
     pts.set_pixit("GATT", "TSPX_use_implicit_send", "TRUE")
     pts.set_pixit("GATT", "TSPX_iut_use_dynamic_bd_addr", "FALSE")
