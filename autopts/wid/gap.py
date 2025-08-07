@@ -1473,10 +1473,17 @@ def hdl_wid_300(_: WIDParams):
     return True
 
 
-def hdl_wid_301(_: WIDParams):
+def hdl_wid_301(params: WIDParams):
     # Please click OK if IUT did not receive periodic advertising report.
+    # or
+    # Please click OK when IUT received periodic advertisement report.
     stack = get_stack()
-    return stack.gap.wait_periodic_report(10)
+
+    if params.test_case_name in ['GAP/BIS/BSE/BV-01-C', 'GAP/SEC/SEM/BI-13-C']:
+        btp.gap_padv_create_sync(0, 0, 10, 0)
+        return stack.gap.wait_periodic_established(10)
+    else:
+        return stack.gap.wait_periodic_report(10)
 
 
 def hdl_wid_302(_: WIDParams):
@@ -1542,6 +1549,60 @@ def hdl_wid_309(_: WIDParams):
     # information.
     stack = get_stack()
     return stack.gap.wait_periodic_transfer_received(10)
+
+
+def hdl_wid_350(_: WIDParams):
+    # Please synchronize with Broadcast ISO request.
+    return True
+
+
+def hdl_wid_351(_: WIDParams):
+    # Wait for Broadcast ISO request.
+    stack = get_stack()
+    return stack.gap.gap_wait_for_iso_channel_status(types.IsoChannelStatus.CONNECTED)
+
+
+def hdl_wid_352(_: WIDParams):
+    # Please click OK when IUT establishes BIG sync, and ready to receive ISO data.
+    stack = get_stack()
+    btp.gap_iso_sync_big()
+    is_con = stack.gap.gap_wait_for_iso_channel_status(types.IsoChannelStatus.CONNECTED)
+    return is_con
+
+
+def hdl_wid_353(_: WIDParams):
+    # Please configure IUT security to Mode 3 Level 2 or Level 3.
+    return True
+
+
+def hdl_wid_354(_: WIDParams):
+    # Please synchronize to lower tester in Security Mode 3 Level 2 or 3.
+    # If IUT failed to synchnorize to the lower tester, please click ok.
+    btp.gap_iso_sync_big()
+
+    stack = get_stack()
+    is_discon = stack.gap.gap_wait_for_iso_channel_status(types.IsoChannelStatus.DISCONNECTED)
+    return is_discon
+
+
+def hdl_wid_356(_: WIDParams):
+    # Please broadcast valid ISO data packets (more than 3 packets).
+    stack = get_stack()
+    btp.gap_iso_send_pckt(4)
+
+    iso_pkt_count = 0
+    for _ in range(4):
+        if stack.gap.gap_wait_for_iso_channel_status(types.IsoChannelStatus.TRANSMITTING, 1):
+            iso_pkt_count += 1
+
+    return (iso_pkt_count == 4)
+
+
+def hdl_wid_357(_: WIDParams):
+    # Please send LE BIGInfo Advertising Report.
+    stack = get_stack()
+    btp.gap_iso_create_big()
+    return True
 
 
 def hdl_wid_400(_: WIDParams):

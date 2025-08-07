@@ -497,3 +497,10 @@ class BIGEncryption:
     BROADCAST_CODE_REQUIRED = 0x01
     DECRYPTING = 0x02
     BAD_CODE = 0x03
+
+
+class IsoChannelStatus(IntEnum):
+    CONNECTED = 0x01
+    TRANSMITTING = 0x02
+    RECEIVING = 0x03
+    DISCONNECTED = 0x04
