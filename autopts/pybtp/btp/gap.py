@@ -38,7 +38,16 @@ from autopts.pybtp.btp.btp import (
     set_pts_addr,
 )
 from autopts.pybtp.btp.btp import get_iut_method as get_iut
-from autopts.pybtp.types import Addr, AdDuration, AdType, BTPError, OwnAddrType, addr2btp_ba, gap_settings_btp2txt
+from autopts.pybtp.types import (
+    Addr,
+    AdDuration,
+    AdType,
+    BTPError,
+    IsoChannelStatus,
+    OwnAddrType,
+    addr2btp_ba,
+    gap_settings_btp2txt,
+)
 
 GAP = {
     "start_adv": (defs.BTP_SERVICE_ID_GAP, defs.BTP_GAP_CMD_START_ADVERTISING,
@@ -145,6 +154,12 @@ GAP = {
     "padv_sync_transfer_recv": (defs.BTP_SERVICE_ID_GAP,
                                 defs.BTP_GAP_CMD_PADV_SYNC_TRANSFER_RECV,
                                 CONTROLLER_INDEX),
+    "iso_sync_big": (defs.BTP_SERVICE_ID_GAP,
+                     defs.BTP_GAP_CMD_ISO_SYNC_BIG, CONTROLLER_INDEX, ""),
+    "iso_create_big": (defs.BTP_SERVICE_ID_GAP,
+                       defs.BTP_GAP_CMD_ISO_CREATE_BIG, CONTROLLER_INDEX, ""),
+    "iso_send_pckt": (defs.BTP_SERVICE_ID_GAP,
+                      defs.BTP_GAP_CMD_ISO_SEND_PCKT, CONTROLLER_INDEX),
 }
 
 
@@ -406,6 +421,16 @@ def gap_encryption_change_ev_(gap, data, data_len):
     stack.gap.encryption_change_rcvd.data = (_addr_t, _addr, _encrypted, _key_size)
 
 
+def gap_iso_channel_changed_ev_(gap, data, data_len):
+    logging.debug("%s", gap_iso_channel_changed_ev_.__name__)
+
+    fmt = '<B'
+    status = struct.unpack(fmt, data)
+
+    stack = get_stack()
+    stack.gap.iso_channel_status.append(IsoChannelStatus(status[0]))
+
+
 GAP_EV = {
     defs.BTP_GAP_EV_NEW_SETTINGS: gap_new_settings_ev_,
     defs.BTP_GAP_EV_DEVICE_FOUND: gap_device_found_ev_,
@@ -425,6 +450,7 @@ GAP_EV = {
     defs.BTP_GAP_EV_PERIODIC_REPORT: gap_padv_report_ev_,
     defs.BTP_GAP_EV_PERIODIC_TRANSFER_RECEIVED: gap_padv_transfer_received_ev_,
     defs.BTP_GAP_EV_ENCRYPTION_CHANGE: gap_encryption_change_ev_,
+    defs.BTP_GAP_EV_ISO_CHANNEL_CHANGED: gap_iso_channel_changed_ev_,
 }
 
 
@@ -1473,5 +1499,34 @@ def gap_padv_sync_transfer_recv(skip, sync_timeout, flags, addr_type=None, addr=
     data_ba = bytearray(struct.pack("<B6sHHB", addr_type, addr, skip, sync_timeout, flags))
 
     iutctl.btp_socket.send(*GAP['padv_sync_transfer_recv'], data=data_ba)
+
+    gap_command_rsp_succ()
+
+
+def gap_iso_sync_big():
+    logging.debug("%s", gap_iso_sync_big.__name__)
+
+    iutctl = get_iut()
+    iutctl.btp_socket.send(*GAP['iso_sync_big'])
+
+    gap_command_rsp_succ()
+
+
+def gap_iso_create_big():
+    logging.debug("%s", gap_iso_create_big.__name__)
+
+    iutctl = get_iut()
+    iutctl.btp_socket.send(*GAP['iso_create_big'])
+
+    gap_command_rsp_succ()
+
+
+def gap_iso_send_pckt(pkt_cnt):
+    logging.debug("%s", gap_iso_send_pckt.__name__)
+
+    iutctl = get_iut()
+
+    data_ba = bytearray(struct.pack('<B', pkt_cnt))
+    iutctl.btp_socket.send(*GAP['iso_send_pckt'], data=data_ba)
 
     gap_command_rsp_succ()

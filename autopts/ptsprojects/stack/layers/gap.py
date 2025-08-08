@@ -108,6 +108,8 @@ class Gap:
         self.periodic_sync_established_rxed = False
         self.periodic_transfer_received = False
 
+        self.iso_channel_status = []
+
         # Used for MMI handling
         self.delay_mmi = False
         self.mmi_round = {}
@@ -282,3 +284,13 @@ class Gap:
 
     def gap_set_pair_user_interaction(self, user_interaction):
         self.pair_user_interaction = user_interaction
+
+    def gap_wait_for_iso_channel_status(self, status, timeout=5):
+        def _check_status():
+            if status in self.iso_channel_status:
+                self.iso_channel_status.remove(status)
+                return True
+            else:
+                return False
+
+        return wait_for_event(timeout, _check_status)
