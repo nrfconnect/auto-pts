@@ -379,6 +379,19 @@ Commands and responses:
                 In case of an error, the error status response will be returned.
                 In case of a success, the IUT continues processing the command asynchronously.
 
+    Opcode 0x1b - Broadcast Sink Set Broadcast Code
+
+                Controller Index:       <controller id>
+                Command parameters:     Address_Type (1 octet)
+                                        Address  (6 octets)
+                                        Broadcast ID (3 octets)
+                                        Broadcast Code (16 octets)
+                Response parameters:    <none>
+
+                This command is used to set the Broadcast Code for a Broadcast Sink in the IUT.
+                In case of an error, the error status response will be returned.
+                In case of a success, the IUT continues processing the command asynchronously.
+
 Events:
         Opcode 0x80 - Discover and Subscribe Completed event
 

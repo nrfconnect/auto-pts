@@ -55,16 +55,17 @@ def hdl_wid_100(_: WIDParams):
     addr_type = ev['addr_type']
     addr = ev['addr']
 
-    if encrypted:
-        stack = get_stack()
+    btp.bap_broadcast_sink_setup()
+
+    # Only send broadcast code for valid, non-placeholder broadcast_id (not 0)
+    if encrypted and broadcast_id != 0:
         broadcast_code = stack.bap.broadcast_code
         if isinstance(broadcast_code, str):
             # The default broadcast code string from PTS is in big endian
             broadcast_code = hex_str_to_le_bytes(broadcast_code)
 
-        # TODO set Broadcast code - BTstack BTP implementation uses default PTS broadcast code
-
-    btp.bap_broadcast_sink_setup()
+        # Set the broadcast code for the sink
+        btp.bap_set_sink_broadcast_code(broadcast_id, broadcast_code, addr_type, addr)
 
     btp.bap_broadcast_sink_sync(broadcast_id, ev['advertiser_sid'],
                                 5, 100, False, 0, addr_type, addr)

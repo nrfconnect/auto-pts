@@ -84,7 +84,48 @@ BAP = {
                                defs.BTP_BAP_CMD_SCAN_DELEGATOR_ADD_SRC, CONTROLLER_INDEX),
     'broadcast_source_setup_v2': (defs.BTP_SERVICE_ID_BAP, defs.BTP_BAP_CMD_BROADCAST_SOURCE_SETUP_V2,
                                   CONTROLLER_INDEX),
+    'set_sink_broadcast_code': (defs.BTP_SERVICE_ID_BAP, defs.BTP_BAP_CMD_BROADCAST_SINK_SET_BROADCAST_CODE, CONTROLLER_INDEX),
 }
+
+
+def bap_set_sink_broadcast_code(
+    broadcast_id: int,
+    broadcast_code: bytes | str,
+    bd_addr_type=None,
+    bd_addr=None
+) -> None:
+    """
+    Send the broadcast code to the IUT for use as a broadcast sink, with address and broadcast_id.
+
+    Args:
+        broadcast_id (int): The broadcast ID as an integer (will be packed as 3 bytes little-endian).
+        broadcast_code (bytes | str): The 16-byte broadcast code as bytes, or a hex string (big-endian, will be converted).
+        bd_addr_type: Address type for the IUT (see address_to_ba).
+        bd_addr: Address for the IUT (see address_to_ba).
+
+    Raises:
+        ValueError: If broadcast_id or broadcast_code are not valid length/type.
+    """
+    iutctl = get_iut()
+
+    if isinstance(broadcast_code, str):
+        broadcast_code = hex_str_to_le_bytes(broadcast_code)
+    if not isinstance(broadcast_code, (bytes, bytearray)) or len(broadcast_code) != 16:
+        raise ValueError('Invalid Broadcast Code length (expected 16 bytes)')
+
+    # Normalize and validate broadcast_id
+    if not isinstance(broadcast_id, int):
+        raise ValueError('broadcast_id must be int')
+    if not (0 <= broadcast_id <= 0xFFFFFF):
+        raise ValueError(f'broadcast_id must be in range 0x000000..0xFFFFFF (got {broadcast_id:#x})')
+    broadcast_id_bytes = int.to_bytes(broadcast_id, 3, 'little')
+
+    data = address_to_ba(bd_addr_type, bd_addr)
+    data += broadcast_id_bytes
+    data += broadcast_code
+
+    iutctl.btp_socket.send(*BAP['set_sink_broadcast_code'], data=data)
+    bap_command_rsp_succ()
 
 
 def bap_command_rsp_succ(timeout=20.0):
