@@ -153,6 +153,26 @@ def hdl_wid_551(params: WIDParams):
     return ev['pba_features'] == pba_features
 
 
+def hdl_wid_553(_: WIDParams):
+    """
+    Please confirm that IUT received Broadcast Name as 🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴
+    """
+
+    expected_name = "🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴🌱🌲🌳🌴"
+    stack = get_stack()
+    # Start scanning for advertisements
+    btp.pbp.pbp_broadcast_scan_start()
+    try:
+        # Wait for the event from the IUT, filter by expected_name
+        ev = stack.pbp.wait_public_broadcast_event_found_ev(WildCard(), WildCard(), expected_name, 30, False)
+        if ev is None:
+            log('No advertisement with Public Broadcast Announcement and Broadcast Name found')
+            return False
+        return True
+    finally:
+        btp.pbp.pbp_broadcast_scan_stop()
+
+
 def hdl_wid_378(_: WIDParams):
     """
     Please confirm received BASE entry
