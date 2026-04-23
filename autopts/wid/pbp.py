@@ -77,6 +77,16 @@ def hdl_wid_100(_: WIDParams):
 
     log('BIS found')
 
+    bis_id = 1
+    requested_bis_sync = 1
+    btp.bap_broadcast_sink_bis_sync(broadcast_id, requested_bis_sync, addr_type, addr)
+
+    ev = stack.bap.wait_bis_synced_ev(broadcast_id, bis_id, 20, False)
+    if ev is None:
+        log(f'BIS Sync failed for broadcast ID {broadcast_id}, bis-id {bis_id}')
+        return False
+
+    log('BIS Synced')
     return True
 
 
