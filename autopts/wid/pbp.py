@@ -188,24 +188,20 @@ def hdl_wid_378(_: WIDParams):
     Please confirm received BASE entry
     """
 
-    # get Broadcast ID and Address from Public Broadcast Announcement in WID 100
     stack = get_stack()
+
     ev = stack.pbp.wait_public_broadcast_event_found_ev(WildCard(), WildCard(), WildCard(), 30, False)
-
-    broadcast_id = ev['broadcast_id']
-    addr_type = ev['addr_type']
-    addr = ev['addr']
-
-    bis_id = 1
-    requested_bis_sync = 1
-    btp.bap_broadcast_sink_bis_sync(broadcast_id, requested_bis_sync, addr_type, addr)
-
-    ev = stack.bap.wait_bis_synced_ev(broadcast_id, bis_id, 20, False)
     if ev is None:
-        log(f'BIS Sync failed for broadcast ID {broadcast_id}, bis-id {bis_id}')
+        log('No advertisement with Public Broadcast Announcement found')
         return False
 
-    log('BIS Synced')
+    broadcast_id = ev['broadcast_id']
+
+    ev = stack.bap.wait_bis_found_ev(broadcast_id, 20, False)
+    if ev is None:
+        log(f'BIS not found for broadcast ID {broadcast_id}')
+        return False
+
     return True
 
 
