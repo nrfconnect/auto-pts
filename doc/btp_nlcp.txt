@@ -1,0 +1,171 @@
+NLCP Service (ID 96)
+=====================
+
+Custom support service for the NLC Profiles Test Suites: ALSNLCP, BLCNLCP, BSSNLCP, DICNLCP, ENMNLCP, HVINLCP, OCSNLCP.
+It manages a set of data and handles the PTS MMI interactions that cannot be resolved by the standard BTP services.
+
+
+All multi-octet fields are little-endian.
+
+Commands and responses:
+
+        Opcode 0x00 - Error response
+
+        Opcode 0x01 - Read Supported Commands command/response
+
+                Controller Index:       <non-controller>
+                Command parameters:     <none>
+                Response parameters:    <supported commands> (variable)
+
+                Each bit in response is a flag indicating if command with
+                opcode matching bit number is supported. Bit set to 1 means
+                that command is supported. Bit 0 is reserved and shall always
+                be set to 0. If specific bit is not present in response (less
+                than required bytes received) it shall be assumed that command
+                is not supported.
+
+                In case of an error, the error response will be returned.
+
+        Opcode 0x02 - Read Identity Report command/response
+
+                Controller Index:       <controller id>
+                Command parameters:     <none>
+                Response parameters:    UUID (16 octets)
+                                        Static Auth (up to 32 octets)
+                                        Output Size (1 octet)
+                                        Output Actions (2 octets)
+                                        Input Size (1 octet)
+                                        Input Actions (2 octets)
+                                        CRPL (2 octets)
+
+                This command is used to read the provisioning identity of the
+                IUT. The Tester uses it to update PIXITs (e.g. TSPX_device_uuid)
+                before the test case starts.
+
+                Static Auth is 32 octets long to cover the
+                BTM_ECDH_P256_HMAC_SHA256_AES_CCM algorithm (Mesh 1.1). A shorter
+                value is padded with zeros.
+
+                Output Actions and Input Actions use the bitmasks of the
+                Mesh Node Service, Configure Provisioning command.
+
+                CRPL is the capacity of the Replay Protection List.
+
+                Error status:
+                        Not Ready = The identity is not available yet.
+                                    The IUT ready event may be sent earlier, so
+                                    the Tester is expected to retry.
+
+                In case of an error, the error response will be returned.
+
+        Opcode 0x03 - Execute Button Injection command/response
+
+                Controller Index:       <controller id>
+                Command parameters:     Option_Action (1 octet)
+                Response parameters:    Reflected_Action (1 octet)
+
+                The command is used to emulate a user action on an IUT button,
+                for the MMI prompts that require a user interaction.
+
+				Only a single action can be executed at once.
+
+				Option_Action is a bit-wise OR of a button and an action:
+
+                Button values (bits 0-2):
+                        0x01 = Button 0
+                        0x02 = Button 1
+                        0x03 = Button 2
+                        0x04 = Button 3
+
+                Action values (bits 4-5):
+                        0x10 = Press, released automatically in 50 ms
+                        0x20 = Press and hold, released automatically in
+                               1000 ms
+
+                In the response the IUT echoes Reflected_Action if the action
+                has been applied. Reflected_Action 0x00 means the requested
+                button is still pressed, and nothing has been done.
+
+                Error status:
+                        Fail = Button injection is not available, or the 
+                               button or the action value is invalid.
+
+                In case of an error, the error response will be returned.
+
+        Opcode 0x04 - Read Provisioned Node Information command/response
+
+                Controller Index:       <controller id>
+                Command parameters:     <none>
+                Response parameters:    Number of Elements (1 octet)
+                                        Primary Element Address (2 octets)
+
+                This command is used to read information of the provisioned
+                Node.
+
+                Error status:
+                        Fail = Node is not provisioned. The Tester may poll
+						       this command to detect provisioning completion.
+ 
+                In case of an error, the error response will be returned.                
+
+        Opcode 0x05 - Execute Non-Trivial command/response
+ 
+                Controller Index:       <controller id>
+                Command parameters:     Type (1 octet)
+                Response parameters:    Type (1 octet)
+                                        Data_Length (2 octets)
+                                        Data (variable)
+ 
+                This command is used to request typed data or to execute an
+                action that does not fit into the fixed-format commands.
+				The IUT echoes Type, followed by Data of Data_Length octets. The
+                format of Data depends on Type.
+ 
+                Types are grouped by range:
+                        0x00-0x3f = Actions
+                        0x40-0x7f = Data
+                        0x80-0xbf = States (reserved)
+ 
+                Valid Type values:
+                        0x00 = Reset Node
+                        0x40 = BSS NLC Profile Scene Index
+
+                Type 0x00 - Reset Node
+ 
+                        Data:    Result (1 octet)
+ 
+                        Valid Result values:
+                                0x00 = OK, the Node is reset and the IUT
+                                       reboots
+                                0x01 = Failed, the Node is not provisioned:
+                                       nothing is reset, no reboot
+ 
+                        This action is used to bring the IUT into the
+                        unprovisioned state with no persistent data left
+                        before a Test Case. The response is sent before the
+                        IUT reboots by itself. The IUT ready event (Core
+                        Service, opcode 0x80) marks the completion.
+                        The Tester shall not send other commands between the
+                        response and the IUT ready event.
+ 
+                        Error status:
+                                Not Ready = The IUT is not ready to execute
+                                            the action yet. The Tester is
+                                            expected to retry.
+                                Fail      = The reset failed. The IUT reboots
+                                            anyway.
+
+                Type 0x40 - BSS NLC Profile Scene Index
+
+				        Data:    Scene Index (2 octets)
+
+                        This data request returns the Scene Index used by the
+						BSS NLC Profile Test Cases.
+
+                Error status:
+                        Fail = Type is unknown.
+
+				In a case of an error, the error response will be returned.
+
+Events:
+        <none>
