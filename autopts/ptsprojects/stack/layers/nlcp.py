@@ -31,17 +31,9 @@ class NLCP:
         self.ident_input_acts = 0
         self.ident_crpl = 0
 
-        # Button injection/usage
-        self.inject_last_btn = None
-        self.inject_last_act = None
-
-        # Provisioned Node information
+        # Provisioned Node configuration
         self.prov_elems_num = None
         self.prov_primary_addr = None
-
-        # Non-trivial information/actions/states
-        self.nt_data_bss_scene_idx = None
-        self.nt_state_node_reset = None
 
     def set_identity_report(self, uuid, static_auth, output_size,
                             output_acts, input_size, input_acts, crpl):
@@ -54,34 +46,18 @@ class NLCP:
         self.ident_crpl = crpl
         self.ident_is_valid = True
 
-    def set_inject_last(self, btn, act):
-        self.inject_last_btn = btn
-        self.inject_last_act = act
-
-    def set_prov_info(self, elems_num, primary_addr):
+    def set_prov_config(self, elems_num, primary_addr):
         self.prov_elems_num = elems_num
         self.prov_primary_addr = primary_addr
 
-    def set_non_triv_data_bss_scene_idx(self, scene_idx):
-        self.nt_data_bss_scene_idx = scene_idx
-
-    def set_non_triv_state_node_reset(self, state):
-        self.nt_state_node_reset = state
-
-    def get_ident_uuid(self):
+    def get_identity_uuid(self):
         return self.ident_iut_uuid
 
     def get_ident_static_auth(self):
         return self.ident_static_auth
 
-    def get_prov_info_elems_num(self):
+    def get_prov_config_elems_num(self):
         return self.prov_elems_num
 
-    def get_prov_info_primary_addr(self):
+    def get_prov_config_primary_addr(self):
         return self.prov_primary_addr
-
-    def get_non_triv_data_bss_scene_idx(self):
-        return self.nt_data_bss_scene_idx
-
-    def get_non_triv_state_node_reset(self):
-        return self.nt_state_node_reset

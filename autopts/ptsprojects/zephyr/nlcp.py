@@ -135,7 +135,8 @@ def _nlcp_tc_check_keys(pts, profile):
     The Test Case requires the Node provisioned before it starts.
     The keys are kept only if the LT has provisioned the Node in this session,
     and the Node has not been reset since.
-    Otherwise, the Node is reset and the LT provisions it again.
+    Otherwise, BTPError is raised and the Test Case ends with BTP ERROR.
+    The cleanup restores the default PIXITs.
     """
     def _process():
         # Do not allow to run TC with preprovisioning conditions on IUT has not
@@ -165,7 +166,7 @@ def _nlcp_tc_launch(pts, timeout_ms):
 
 def _nlcp_pixit_update_identity(pts, profile):
     nlcp = get_stack().nlcp
-    pts.update_pixit_param(profile, "TSPX_device_uuid", nlcp.get_ident_uuid())
+    pts.update_pixit_param(profile, "TSPX_device_uuid", nlcp.get_identity_uuid())
 
 
 def _nlcp_pixit_update_store_keys(pts, profile, need_store):
