@@ -14,6 +14,7 @@
 #
 
 import logging
+import os
 import re
 import struct
 import time
@@ -24,6 +25,23 @@ from autopts.pybtp.types import WIDParams
 
 # MMDL ATS ver. 1.0
 log = logging.debug
+
+
+def mmdl_security_information_retained():
+    """Return True when mesh security information is retained between test cases.
+
+    Set AUTOPTS_MMDL_SECURITY_INFORMATION=0 to remove security information and
+    provision the IUT in every test (SIG reference style). Enabled by default.
+    """
+    val = os.environ.get('AUTOPTS_MMDL_SECURITY_INFORMATION', '1').lower()
+    return val not in ('0', 'n', 'no', 'false')
+
+
+def mmdl_mesh_start():
+    """Start mesh after IUT reset or in test pre-conditions."""
+    if mmdl_security_information_retained():
+        btp.mesh_config_prov()
+    btp.mesh_start()
 
 
 def mmdl_wid_hdl(wid, description, test_case_name):
@@ -43,7 +61,7 @@ def iut_reset():
     btp.core_reg_svc_mesh()
     btp.mesh_init()
     btp.gap_read_ctrl_info()
-    btp.mesh_start()
+    mmdl_mesh_start()
 
 
 def hdl_wid_13(_: WIDParams):
