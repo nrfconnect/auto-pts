@@ -24,7 +24,7 @@ from autopts.ptsprojects.stack import get_stack
 from autopts.ptsprojects.testcase import TestFunc
 from autopts.ptsprojects.zephyr.ztestcase import ZTestCase
 from autopts.pybtp import btp, defs
-from autopts.wid import mmdl_wid_hdl
+from autopts.wid.mmdl import mmdl_mesh_start, mmdl_security_information_retained, mmdl_wid_hdl
 
 
 def set_pixits(ptses):
@@ -60,6 +60,10 @@ def set_pixits(ptses):
     pts.set_pixit("MMDL", "TSPX_enable_IUT_provisioner", "FALSE")
     pts.set_pixit("MMDL", "TSPX_cadence_property_IDs", "1,0069,0010,FFF0")
     pts.set_pixit("MMDL", "TSPX_iut_comp_data_page", "1")
+
+    delete_keys = "FALSE" if mmdl_security_information_retained() else "TRUE"
+    pts.set_pixit("MMDL", "TSPX_delete_link_key", delete_keys)
+    pts.set_pixit("MMDL", "TSPX_delete_ltk", delete_keys)
 
 
 def test_cases(ptses):
@@ -111,7 +115,13 @@ def test_cases(ptses):
             "MMDL", "TSPX_device_uuid2", stack.mesh.get_dev_uuid_lt2())),
         TestFunc(lambda: pts.update_pixit_param(
             "MMDL", "TSPX_bd_addr_iut",
-            stack.gap.iut_addr_get_str()))]
+            stack.gap.iut_addr_get_str()))
+    ]
+
+    if mmdl_security_information_retained():
+        # Retain security information: after IUT reset, mesh_start() loads stored
+        # network and model state. Without this, only the first case works.
+        pre_conditions += [TestFunc(mmdl_mesh_start)]
 
     test_case_name_list = pts.get_test_case_list('MMDL')
     tc_list = []
