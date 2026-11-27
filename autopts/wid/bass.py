@@ -23,8 +23,8 @@ from autopts.pybtp.types import (
     UUID,
     AdFlags,
     AdType,
-    BASSPASyncState,
     BIGEncryption,
+    PaSyncRequest,
     WIDParams,
     gap_settings_btp2txt,
     uuid_to_le_hex_str,
@@ -188,6 +188,11 @@ def hdl_wid_113(_: WIDParams):
 
     # BIS_Sync bitfield uses bit 0 for BIS Index 1
     requested_bis_sync = 1 << (ev['bis_id'] - 1)
+
+    if stack.gap.read_periodic_biginfo(timeout=20) is None:
+        log(f'BIGInfo not found for broadcast ID {broadcast_id}')
+        return False
+
     btp.bap_broadcast_sink_bis_sync(ev['broadcast_id'], requested_bis_sync)
 
     bis_id = ev['bis_id']
@@ -232,7 +237,7 @@ def hdl_wid_116(_: WIDParams):
     btp.bap_scan_delegator_add_src(
         broadcaster_addr_type, broadcaster_addr,
         advertiser_sid, broadcast_id,
-        BASSPASyncState.NOT_SYNCED, big_encryption, 1, subgroups)
+        PaSyncRequest.NO_SYNC, big_encryption, 1, subgroups)
 
     ev = stack.bap.wait_broadcast_receive_state_ev(
         broadcast_id, WildCard(), WildCard(),
@@ -273,6 +278,6 @@ def hdl_wid_20001(_: WIDParams):
     }
 
     btp.gap_set_extended_advertising_on()
-    btp.gap_adv_ind_on(ad=ad)
+    btp.gap_start_advertising(ad=ad)
 
     return True

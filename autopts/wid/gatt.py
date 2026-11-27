@@ -100,35 +100,37 @@ COMPARED_VALUE = []
 def hdl_wid_1(params: WIDParams):
     if 'LT2' in params.test_case_name:
         addr = btp.lt2_addr_get()
+        conn_count = 2
     else:
         addr = btp.pts_addr_get()
+        conn_count = 1
 
     stack = get_stack()
-    btp.gap_set_conn()
-    btp.gap_set_gendiscov()
-    btp.gap_adv_ind_on(ad=stack.gap.ad)
-    stack.gap.wait_for_connection(timeout=10, addr=addr)
+    btp.gap_set_connectable()
+    btp.gap_set_general_discoverable()
+    btp.gap_start_advertising(ad=stack.gap.ad)
+    stack.gap.wait_for_connection(timeout=10, conn_count=conn_count, addr=addr)
     return True
 
 
 def hdl_wid_2(params: WIDParams):
     if 'LT2' in params.test_case_name:
-        btp.gap_conn(btp.lt2_addr_get(), btp.lt2_addr_type_get())
+        btp.gap_connect(btp.lt2_addr_get(), btp.lt2_addr_type_get())
     else:
-        btp.gap_conn(btp.pts_addr_get(), btp.pts_addr_type_get())
+        btp.gap_connect(btp.pts_addr_get(), btp.pts_addr_type_get())
     return True
 
 
 def hdl_wid_3(params: WIDParams):
     if 'LT2' in params.test_case_name:
-        btp.gap_disconn(btp.lt2_addr_get(), btp.lt2_addr_type_get())
+        btp.gap_disconnect(btp.lt2_addr_get(), btp.lt2_addr_type_get())
     else:
-        btp.gap_disconn(btp.pts_addr_get(), btp.pts_addr_type_get())
+        btp.gap_disconnect(btp.pts_addr_get(), btp.pts_addr_type_get())
     return True
 
 
 def hdl_wid_4(_: WIDParams):
-    btp.gap_set_io_cap(IOCap.no_input_output)
+    btp.gap_set_io_capability(IOCap.no_input_output)
     return True
 
 
@@ -1084,13 +1086,17 @@ def hdl_wid_93(params: WIDParams):
         addr_type, addr = (btp.pts_addr_type_get(), btp.pts_addr_get())
 
     db = gatt_server_fetch_db().db
-    handles = [
-        db[i].handle + 1
-        for i in range(1, len(db) + 1)
-        if isinstance(db[i], GattCharacteristic) and db[i].prop & Prop.notify
-    ]
+    handles = []
 
-    btp.gatts_notify_mult(addr_type, addr, len(handles), handles)
+    for i in range(1, len(db) + 1):
+        if isinstance(db[i], GattCharacteristic) and db[i].prop & Prop.notify:
+            handles.append(db[i].handle + 1)
+            # Limit to max 2 handles to ensure the ATT_MULTIPLE_HANDLE_VALUE_NTF PDU
+            # fits within ATT_MTU without truncating HLV tuples.
+            if len(handles) == 2:
+                break
+
+    btp.gatts_notify_mult(addr_type, addr, 2, handles)
     return True
 
 
@@ -1672,10 +1678,6 @@ def hdl_wid_130(params: WIDParams):
     # Please delete security key before connecting to PTS if IUT was bonded previously.
     btp.gap_unpair()
 
-    # This is needed until ES-27410 is incorporated
-    if params.test_case_name in ['GATT/SR/GAI/BV-01-C', 'GATT/SR/GAN/BV-01-C']:
-        btp.gap_set_bondable_off()
-
     return True
 
 
@@ -2024,8 +2026,9 @@ def hdl_wid_304(params: WIDParams):
 
 
 def hdl_wid_308(params: WIDParams):
-    # description: Please do not send an ATT_Handle_value_Multiple_notification to Lower tester until timeout(30s).
-
+    """
+    Please do not send an ATT_Handle_value_Multiple_notification to Lower tester until timeout(30s).
+    """
     # PTS description is bit odd because in test spec UT is expected to request sending
     # ATT_Handle_value_Multiple_notification and IUT should ignore that.
 
@@ -2035,17 +2038,27 @@ def hdl_wid_308(params: WIDParams):
         addr_type, addr = (btp.pts_addr_type_get(), btp.pts_addr_get())
 
     db = gatt_server_fetch_db().db
-    handles = [
-        db[i].handle + 1
-        for i in range(1, len(db) + 1)
-        if isinstance(db[i], GattCharacteristic) and db[i].prop & Prop.notify
-    ]
+    handles = []
 
+    for i in range(1, len(db) + 1):
+        if isinstance(db[i], GattCharacteristic) and db[i].prop & Prop.notify:
+            handles.append(db[i].handle + 1)
+            # Limit to max 2 handles to ensure the ATT_MULTIPLE_HANDLE_VALUE_NTF PDU
+            # fits within ATT_MTU without truncating HLV tuples.
+            if len(handles) == 2:
+                break
     # IUT may fail here (or silently ignore and return success)
     try:
-        btp.gatts_notify_mult(addr_type, addr, len(handles), handles)
-    except BTPError:
-        pass
+        btp.gatts_notify_mult(addr_type, addr, 2, handles)
+    except BTPError as e:
+        if len(handles) < 2:
+            logging.error(
+                "gatts_notify_mult failed due to insufficient handles. The database contains %d"
+                " characteristic(s) with notify properties, but at least 2 are required. BTPError: %s", len(handles), e
+            )
+            return False
+
+        logging.error("BTPError occured but is safe to ignore with valid setup")
 
     return True
 
@@ -2062,7 +2075,7 @@ def hdl_wid_400(params: WIDParams):
         addr = btp.pts_addr_get()
 
     stack = get_stack()
-    gap_ev = stack.gap.gap_wait_for_sec_lvl_change(level=2, timeout=30, addr=addr)
+    gap_ev = stack.gap.gap_wait_for_sec_lvl_change(min_level=1, timeout=30, addr=addr)
     if gap_ev is None:
         return False
 

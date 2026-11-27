@@ -104,6 +104,10 @@ def hdl_wid_100(params: WIDParams):
     requested_bis_sync = 1
     bis_ids = [1]
 
+    if stack.gap.read_periodic_biginfo(timeout=20) is None:
+        log(f'BIGInfo not found for broadcast ID {broadcast_id}')
+        return False
+
     btp.bap_broadcast_sink_bis_sync(broadcast_id, requested_bis_sync)
 
     for bis_id in bis_ids:
@@ -764,13 +768,17 @@ def hdl_wid_2004(params: WIDParams):
     pattern = r'[\d]{6}'
     passkey = re.search(pattern, params.description)[0]
     stack = get_stack()
-    bd_addr = btp.pts_addr_get()
-    bd_addr_type = btp.pts_addr_type_get()
+    if params.test_case_name.endswith('LT2'):
+        bd_addr = lt2_addr_get()
+        bd_addr_type = lt2_addr_type_get()
+    else:
+        bd_addr = pts_addr_get()
+        bd_addr_type = pts_addr_type_get()
 
     if stack.gap.get_passkey() is None:
         return False
 
-    btp.gap_passkey_confirm_rsp(bd_addr, bd_addr_type, passkey)
+    btp.gap_passkey_confirm_response(bd_addr, bd_addr_type, passkey)
     match = stack.gap.passkey.data == passkey
 
     # clear passkey for repeated pairing attempts
@@ -804,8 +812,8 @@ def hdl_wid_20001(params: WIDParams):
     if location is not None:
         btp.pacs_set_location(AudioDir.SINK, location)
 
-    btp.gap_set_conn()
-    btp.gap_adv_ind_on(ad=stack.gap.ad)
+    btp.gap_set_connectable()
+    btp.gap_start_advertising(ad=stack.gap.ad)
     return True
 
 
@@ -822,8 +830,16 @@ def hdl_wid_20100(params: WIDParams):
         addr_type = pts_addr_type_get()
 
     stack = get_stack()
-    btp.gap_conn(addr, addr_type)
-    stack.gap.wait_for_connection(timeout=5, addr=addr)
+    btp.gap_connect(addr, addr_type)
+    stack.gap.wait_for_connection(timeout=10, addr=addr)
+    sec_lvl = stack.gap.gap_wait_for_sec_lvl_change(min_level=2, addr=addr)
+
+    # Workaround for issue described by PTS Request ID 190838
+    if sec_lvl < 2:
+        btp.gap_pair(addr, addr_type)
+        sec_lvl = stack.gap.gap_wait_for_sec_lvl_change(min_level=2, addr=addr)
+        if sec_lvl < 2:
+            return False
 
     # race condition: connect will cause pairing, which might trigger numeric comparison, but
     # PTS will show WID2004 to let us confirm, which we cannot if we're still in this function
@@ -914,6 +930,7 @@ def hdl_wid_20110(params: WIDParams):
     if match:
         volume_setting = match.group(1)
         btp.vcp_set_vol(volume_setting, addr_type, addr)
+        get_stack().vcp.wait_vcp_procedure_ev(addr_type, addr, 10)
 
     return True
 

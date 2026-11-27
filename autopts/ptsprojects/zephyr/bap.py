@@ -54,13 +54,10 @@ def set_pixits(ptses):
     pts.set_pixit("BAP", "TSPX_iut_ATT_transport", "ATT Bearer on LE Transport")
     pts.set_pixit("BAP", "TSPX_VS_Codec_ID", "ffff")
     pts.set_pixit("BAP", "TSPX_VS_Company_ID", "ffff")
-    pts.set_pixit("BAP", "TSPX_broadcast_code", BROADCAST_CODE)
-    """
-    TODO this should be set to -1 but PTS is return error when setting this with RPC so leave
-    this on workspace default
-    pts.set_pixit("BAP", "TSPX_Broadcast_ID", "0")
-    """
-    pts.set_pixit("BAP", "TSPX_Broadcast_ID_2", "0")
+    pts.set_pixit("BAP", "TSPX_STREAMING_DATA_CONFIRMATION_METHOD", "By Playing")
+    pts.set_pixit("BAP", "TSPX_Broadcast_Code", BROADCAST_CODE)
+    pts.set_pixit("BAP", "TSPX_Broadcast_ID", BROADCAST_ID)
+    pts.set_pixit("BAP", "TSPX_Broadcast_ID_2", BROADCAST_ID_2)
 
     if len(ptses) < 2:
         return
@@ -80,7 +77,8 @@ def set_pixits(ptses):
     pts2.set_pixit("BAP", "TSPX_iut_ATT_transport", "ATT Bearer on LE Transport")
     pts2.set_pixit("BAP", "TSPX_VS_Codec_ID", "ffff")
     pts2.set_pixit("BAP", "TSPX_VS_Company_ID", "ffff")
-    pts2.set_pixit("BAP", "TSPX_broadcast_code", BROADCAST_CODE)
+    pts2.set_pixit("BAP", "TSPX_STREAMING_DATA_CONFIRMATION_METHOD", "By Playing")
+    pts2.set_pixit("BAP", "TSPX_Broadcast_Code", BROADCAST_CODE)
 
 
 def test_cases(ptses):
@@ -118,33 +116,35 @@ def test_cases(ptses):
 
     pre_conditions = [TestFunc(btp.core_reg_svc_gap),
                       TestFunc(stack.gap_init, iut_device_name),
-                      TestFunc(btp.gap_read_ctrl_info),
+                      TestFunc(btp.gap_read_controller_info),
                       TestFunc(lambda: pts.update_pixit_param(
                           "BAP", "TSPX_bd_addr_iut",
                           stack.gap.iut_addr_get_str())),
                       TestFunc(btp.core_reg_svc_gatt),
                       TestFunc(btp.set_pts_addr, pts_bd_addr, Addr.le_public),
                       TestFunc(stack.gatt_init),
-                      TestFunc(btp.gap_set_conn),
-                      TestFunc(btp.gap_set_gendiscov),
+                      TestFunc(btp.gap_set_connectable),
+                      TestFunc(btp.gap_set_general_discoverable),
                       TestFunc(btp.core_reg_svc_pacs),
                       TestFunc(btp.core_reg_svc_ascs),
                       TestFunc(btp.core_reg_svc_bap),
                       TestFunc(stack.ascs_init),
                       TestFunc(stack.bap_init),
                       TestFunc(lambda: stack.bap.set_broadcast_code(BROADCAST_CODE)),
+                      TestFunc(lambda: stack.bap.set_broadcast_id(BROADCAST_ID)),
+                      TestFunc(lambda: stack.bap.set_broadcast_id_2(BROADCAST_ID_2)),
                       TestFunc(lambda: set_addr(
                           stack.gap.iut_addr_get_str())),
                       ]
 
     pre_conditions_server = pre_conditions + [
         TestFunc(btp.gap_set_extended_advertising_on),
-        TestFunc(lambda: btp.gap_adv_ind_on(ad=ad)),
+        TestFunc(lambda: btp.gap_start_advertising(ad=ad)),
     ]
 
     scan_delegator_pre_conditions = pre_conditions + [
         TestFunc(btp.gap_set_extended_advertising_on),
-        TestFunc(lambda: btp.gap_adv_ind_on(ad=ad_bass)),
+        TestFunc(lambda: btp.gap_start_advertising(ad=ad_bass)),
     ]
 
     custom_test_cases = [
@@ -308,8 +308,11 @@ def test_cases(ptses):
                                [SynchPoint("BAP/BA/BASS/BV-08-C", 20100),
                                 SynchPoint("BAP/BA/BASS/BV-08-C_LT2", 100)]),
                       TestFunc(get_stack().synch.add_synch_element,
-                               [SynchPoint("BAP/BA/BASS/BV-08-C", 349),
-                                SynchPoint("BAP/BA/BASS/BV-08-C_LT2", 384)])],
+                               [SynchPoint("BAP/BA/BASS/BV-08-C", 388),
+                                SynchPoint("BAP/BA/BASS/BV-08-C_LT2", 384)]),
+                      TestFunc(get_stack().synch.add_synch_element,
+                               [SynchPoint("BAP/BA/BASS/BV-08-C", 389),
+                                SynchPoint("BAP/BA/BASS/BV-08-C_LT2", 376)])],
                   generic_wid_hdl=bap_wid_hdl,
                   lt2="BAP/BA/BASS/BV-08-C_LT2"),
         ZTestCase("BAP", "BAP/SDE/BASS/BV-01-C",

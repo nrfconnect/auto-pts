@@ -35,6 +35,7 @@ from autopts.ptsprojects.stack.layers.mcp import MCP
 from autopts.ptsprojects.stack.layers.mesh import Mesh
 from autopts.ptsprojects.stack.layers.micp import MICP
 from autopts.ptsprojects.stack.layers.mics import MICS
+from autopts.ptsprojects.stack.layers.nlcp import NLCP
 from autopts.ptsprojects.stack.layers.ots import OTS
 from autopts.ptsprojects.stack.layers.pacs import PACS
 from autopts.ptsprojects.stack.layers.pbp import PBP
@@ -57,7 +58,7 @@ log = logging.debug
 class Stack:
     def __init__(self):
         self.supported_svcs = 0
-        self.supported_cmds = 0
+        self.supported_cmds = {}
         self.synch = None
 
         self.gap = None
@@ -90,12 +91,20 @@ class Stack:
         self.sdp = None
         self.csis = None
         self.rfcomm = None
+        self.nlcp = None
         # GENERATOR append 2
         self.supported_svcs_cmds = common.supported_svcs_cmds
 
     def is_svc_supported(self, svc):
         svc_value = self.supported_svcs_cmds.get(svc, {}).get("service", 0)
         return (self.supported_svcs & svc_value) > 0
+
+    def is_cmd_supported(self, svc, cmd):
+        if not self.is_svc_supported(svc):
+            return False
+
+        supported_cmds = self.supported_cmds.get(svc, 0)
+        return (supported_cmds & (1 << cmd)) > 0
 
     def gap_init(self, name=None, manufacturer_data=None, appearance=None,
                  svc_data=None, flags=None, svcs=None, uri=None, periodic_data=None,
@@ -203,6 +212,9 @@ class Stack:
     def rfcomm_init(self):
         self.rfcomm = RFCOMM()
 
+    def nlcp_init(self):
+        self.nlcp = NLCP()
+
     # GENERATOR append 3
 
     def cleanup(self):
@@ -295,6 +307,9 @@ class Stack:
 
         if self.rfcomm:
             self.rfcomm_init()
+
+        if self.nlcp:
+            self.nlcp_init()
 
         # GENERATOR append 4
 

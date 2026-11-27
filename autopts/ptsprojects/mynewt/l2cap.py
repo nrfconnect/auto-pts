@@ -16,12 +16,12 @@
 """L2CAP test cases"""
 
 from autopts.client import get_unique_name
+from autopts.ptsprojects.mynewt.l2cap_wid import l2cap_wid_hdl
 from autopts.ptsprojects.mynewt.ztestcase import ZTestCase
-from autopts.ptsprojects.stack import L2cap, get_stack
+from autopts.ptsprojects.stack import L2CapChannelStatusCode, get_stack
 from autopts.ptsprojects.testcase import TestFunc
 from autopts.pybtp import btp
 from autopts.pybtp.types import Addr
-from autopts.wid import l2cap_wid_hdl
 
 le_psm = 128
 psm_unsupported = 241
@@ -46,34 +46,10 @@ def set_pixits(ptses):
     pts = ptses[0]
 
     pts.set_pixit("L2CAP", "TSPX_bd_addr_iut", "DEADBEEFDEAD")
-    pts.set_pixit("L2CAP", "TSPX_security_enabled", "FALSE")
-    pts.set_pixit("L2CAP", "TSPX_delete_link_key", "FALSE")
-    pts.set_pixit("L2CAP", "TSPX_pin_code", "0000")
-    pts.set_pixit("L2CAP", "TSPX_delete_ltk", "FALSE")
-    pts.set_pixit("L2CAP", "TSPX_l2ca_inmtu", "02A0")
-    pts.set_pixit("L2CAP", "TSPX_iut_supported_max_channels", "5")
-    pts.set_pixit("L2CAP", "TSPX_tester_mps", "0017")
-    pts.set_pixit("L2CAP", "TSPX_tester_mtu", "02A0")
-    pts.set_pixit("L2CAP", "TSPX_iut_role_initiator", "FALSE")
     pts.set_pixit("L2CAP", "TSPX_spsm", "0000")
-    pts.set_pixit("L2CAP", "TSPX_psm", "0001")
     pts.set_pixit("L2CAP", "TSPX_psm_unsupported", "0000")
-    pts.set_pixit("L2CAP", "TSPX_psm_authentication_required", "00F2")
-    pts.set_pixit("L2CAP", "TSPX_psm_authorization_required", "00F3")
-    pts.set_pixit("L2CAP", "TSPX_psm_encryption_key_size_required", "00F4")
-    pts.set_pixit("L2CAP", "TSPX_psm_encryption_required", "00F5")
-    pts.set_pixit("L2CAP", "TSPX_time_guard", "180000")
-    pts.set_pixit("L2CAP", "TSPX_timer_rtx", "10000")
-    pts.set_pixit("L2CAP", "TSPX_timer_rtx_max", "1000")
-    pts.set_pixit("L2CAP", "TSPX_timer_rtx_min", "60000")
-    pts.set_pixit("L2CAP", "TSPX_use_implicit_send", "TRUE")
-    pts.set_pixit("L2CAP", "TSPX_use_dynamic_pin", "FALSE")
-    pts.set_pixit("L2CAP", "TSPX_iut_SDU_size_in_bytes", "144")
-    pts.set_pixit("L2CAP", "TSPX_secure_simple_pairing_pass_key_confirmation", "FALSE")
-    pts.set_pixit("L2CAP", "TSPX_generate_local_busy", "TRUE")
     pts.set_pixit("L2CAP", "TSPX_l2ca_cbmps_min", "0064")
     pts.set_pixit("L2CAP", "TSPX_l2ca_cbmps_max", "0064")
-    pts.set_pixit("L2CAP", "TSPX_l2ca_cbmtu_min", "0040")
     pts.set_pixit("L2CAP", "TSPX_l2ca_cbmtu_max", "00E6")
 
 
@@ -91,7 +67,7 @@ def test_cases(ptses):
 
     common = [TestFunc(btp.core_reg_svc_gap),
               TestFunc(btp.core_reg_svc_l2cap),
-              TestFunc(btp.gap_read_ctrl_info),
+              TestFunc(btp.gap_read_controller_info),
               TestFunc(lambda: pts.update_pixit_param(
                   "L2CAP", "TSPX_bd_addr_iut",
                   stack.gap.iut_addr_get_str())),
@@ -136,7 +112,7 @@ def test_cases(ptses):
 
     pre_conditions_unacceptable_parameters = common + [
         TestFunc(stack.l2cap_init, le_psm, le_initial_mtu),
-        TestFunc(btp.l2cap_le_listen, le_psm, le_initial_mtu, L2cap.unacceptable_parameters)
+        TestFunc(btp.l2cap_le_listen, le_psm, le_initial_mtu, L2CapChannelStatusCode.UNACCEPTABLE_PARAMETERS)
     ]
 
     pre_conditions_gatt = common + [
@@ -205,6 +181,10 @@ def test_cases(ptses):
         # Collision mitigation handling
         ZTestCase("L2CAP", "L2CAP/TIM/BV-03-C",
                   pre_conditions_gatt,
+                  generic_wid_hdl=l2cap_wid_hdl),
+        ZTestCase("L2CAP", "L2CAP/ECFC/BV-22-C",
+                  pre_conditions +
+                  [TestFunc(lambda: pts.update_pixit_param("L2CAP", "TSPX_iut_role_initiator", "True"))],
                   generic_wid_hdl=l2cap_wid_hdl),
     ]
 

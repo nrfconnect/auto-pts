@@ -76,21 +76,34 @@ def html_profile_summary(tc_results):
     test_groups = {}
     common.get_tc_res_data(tc_results, test_groups)
 
-    for tg in test_groups.values():
-        tg.get_pass_rate()
+    total = common.TestGroup()
 
     table_rows = ""
     for suite, stats in test_groups.items():
+        total.total += stats.total
+        total.passed += stats.passed
+        total.failed += stats.failed
+
         table_rows += f"""
             <tr>
                 <td>{suite}</td>
                 <td>{stats.total}</td>
                 <td>{stats.passed}</td>
                 <td>{stats.failed}</td>
-                <td>{stats.pass_rate:.2f} %</td>
+                <td>{stats.get_pass_rate():.2f} %</td>
             </tr>
             """
 
+    # Add final "Total" row that contains the overall result for the set of suites
+    table_rows += f"""
+        <tr>
+            <td>Total</td>
+            <td>{total.total}</td>
+            <td>{total.passed}</td>
+            <td>{total.failed}</td>
+            <td>{total.get_pass_rate():.2f} %</td>
+        </tr>
+        """
     suite_summary = f"""
         <div>
             <h3>Test Group/Profile Summary</h3>

@@ -1,0 +1,51 @@
+# To add note to the reports about awaited known issues, list them here e.g.:
+# GAP/CONN/NCON/BV-01-C: CASE00xxxxx
+# GAP/CONN/NCON/BV-02-C: CASE00xxxxx
+
+BAP/BA/BASS/BV-08-C: https://support.bluetooth.com/hc/en-us/requests/190836
+
+BAP/BSNK/STR/BV-09-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-10-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-43-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-44-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-75-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-76-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-91-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-92-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-26-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-27-C: https://support.bluetooth.com/hc/en-us/requests/191508
+BAP/BSNK/STR/BV-60-C: https://support.bluetooth.com/hc/en-us/requests/191508
+
+CAP/INI/BST/BV-01-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-02-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-03-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-04-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-05-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-06-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-07-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-08-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-09-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-10-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-16-C: https://support.bluetooth.com/hc/en-us/requests/191389
+CAP/INI/BST/BV-17-C: https://support.bluetooth.com/hc/en-us/requests/191389
+
+GAP/CONN/CPUP/BV-08-C: Laird PTS LE-only dongle required
+GAP/CONN/CPUP/BV-10-C: Laird PTS LE-only dongle required
+GAP/SEC/AUT/BV-13-C: ES-28650
+GAP/SEC/AUT/BV-14-C: ES-28650
+
+GMCS/SR/MCP/BV-14-C: https://bluetooth.atlassian.net/browse/ES-29526
+
+GTBS/SR/CP/BV-09-C: https://bluetooth.atlassian.net/browse/ES-29033
+GTBS/SR/CP/BV-11-C: https://bluetooth.atlassian.net/browse/ES-29033
+TBS/SR/CP/BV-09-C: https://bluetooth.atlassian.net/browse/ES-29033
+TBS/SR/CP/BV-11-C: https://bluetooth.atlassian.net/browse/ES-29033
+
+MCP/CL/CGGIT/CHA/BV-07-C: https://support.bluetooth.com/hc/en-us/requests/188923
+MCP/CL/CGGIT/CHA/BV-08-C: https://support.bluetooth.com/hc/en-us/requests/188923
+MCP/CL/CGGIT/CHA/BV-11-C: https://support.bluetooth.com/hc/en-us/requests/188923
+MCP/CL/CGGIT/CHA/BV-12-C: https://support.bluetooth.com/hc/en-us/requests/188923
+MCP/CL/CGGIT/CHA/BV-14-C: https://support.bluetooth.com/hc/en-us/requests/188923
+MCP/CL/CGGIT/CHA/BV-15-C: https://support.bluetooth.com/hc/en-us/requests/188923
+
+TMAP/UMS/VRC/BV-02-C: https://support.bluetooth.com/hc/en-us/requests/190838

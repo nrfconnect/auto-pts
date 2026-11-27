@@ -72,7 +72,6 @@ def set_pixits(ptses):
     pts.set_pixit("HAP", "TSPX_Periodic_Adv_Interval_max", "600")
     pts.set_pixit("HAP", "TSPX_TARGET_LATENCY", "TARGET_BALANCED_LATENCY_RELIABILITY")
     pts.set_pixit("HAP", "TSPX_TARGET_PHY", "LE_2M_PHY")
-    pts.set_pixit("HAP", "TSPX_largest_preset_index", str(max_index))
     pts.set_pixit("HAP", "TSPX_num_presets", str(num_presets))
 
 
@@ -109,12 +108,12 @@ def test_cases(ptses):
     pre_conditions = [
         TestFunc(btp.core_reg_svc_gap),
         TestFunc(stack.gap_init, iut_device_name),
-        TestFunc(btp.gap_read_ctrl_info),
+        TestFunc(btp.gap_read_controller_info),
         TestFunc(btp.core_reg_svc_gatt),
         TestFunc(btp.set_pts_addr, pts_bd_addr, Addr.le_public),
         TestFunc(stack.gatt_init),
-        TestFunc(btp.gap_set_conn),
-        TestFunc(btp.gap_set_gendiscov),
+        TestFunc(btp.gap_set_connectable),
+        TestFunc(btp.gap_set_general_discoverable),
         TestFunc(btp.core_reg_svc_aics),
         TestFunc(stack.aics_init),
         TestFunc(btp.core_reg_svc_mics),
@@ -141,7 +140,7 @@ def test_cases(ptses):
                 Context.LIVE | Context.MEDIA, Context.LIVE, 0)),
         TestFunc(set_member_rsi, advData, True),
         TestFunc(btp.gap_set_extended_advertising_on),
-        TestFunc(btp.gap_adv_ind_on, ad=advData),
+        TestFunc(btp.gap_start_advertising, ad=advData),
     ]
 
     pre_conditions_ha_binaural = pre_conditions + adv_conditions + [
@@ -163,7 +162,7 @@ def test_cases(ptses):
     pre_conditions_hauc = [
         TestFunc(btp.core_reg_svc_gap),
         TestFunc(stack.gap_init, iut_device_name),
-        TestFunc(btp.gap_read_ctrl_info),
+        TestFunc(btp.gap_read_controller_info),
         TestFunc(btp.set_pts_addr, pts_bd_addr, Addr.le_public),
         TestFunc(btp.core_reg_svc_pacs),
         TestFunc(stack.pacs_init),

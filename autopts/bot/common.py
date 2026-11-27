@@ -35,6 +35,7 @@ from autopts.client import Client, CliParser, TestCaseRunStats, init_logging, ru
 from autopts.config import AUTOPTS_ROOT_DIR, MAX_SERVER_RESTART_TIME, generate_file_paths, SERIAL_BAUDRATE
 from autopts.ptsprojects.boards import get_debugger_snr, get_free_device, get_tty, release_device
 from autopts.ptsprojects.testcase_db import DATABASE_FILE
+from autopts.types import AutoPTSMode
 
 log = logging.debug
 
@@ -84,6 +85,7 @@ class BotConfigArgs(Namespace):
 
     def __init__(self, args, **kwargs):
         super().__init__(**kwargs)
+        self.autopts_mode = args.get('autopts_mode', AutoPTSMode.AUTO_TCP_IP)
         self.iut_mode = args.get('iut_mode', None)
         self.workspace = args['workspace']
         self.project_path = args['project_path']
@@ -121,6 +123,7 @@ class BotConfigArgs(Namespace):
         self.excluded = args.get('excluded', [])
 
         self.bd_addr = args.get('bd_addr', '')
+        self.pts_addr = args.get('pts_addr', '')
         self.enable_max_logs = args.get('enable_max_logs', False)
         self.retry = args.get('retry', 0)
         self.no_retry_on_regression = args.get('no_retry_on_regression')
@@ -155,7 +158,8 @@ class BotConfigArgs(Namespace):
                     # For backward compatibility
                     iut_target['board_name'] = iut_target['board']
 
-        if self.server_args is not None:
+        if self.autopts_mode == AutoPTSMode.AUTO_CLIENT_ONLY:
+            assert(self.server_args is not None)
             from autoptsserver import SvrArgumentParser
             _server_args = SvrArgumentParser(
                 "PTS automation server").parse_args(self.server_args.split())
@@ -609,32 +613,41 @@ class BotClient(Client):
 
         report_data['tc_results'] = collections.OrderedDict(sorted(report_data['tc_results'].items()))
 
-        report_data['errata'] = report.get_errata([
-            os.path.join(AUTOPTS_ROOT_DIR, 'errata/common.yaml'),
-            os.path.join(AUTOPTS_ROOT_DIR, f'errata/{self.autopts_project_name}.yaml')
-        ])
+        report_data["known_issues"] = report.get_known_issues(
+            [
+                os.path.join(AUTOPTS_ROOT_DIR, "known_issues/common.yaml"),
+                os.path.join(AUTOPTS_ROOT_DIR, f"known_issues/{self.autopts_project_name}.yaml"),
+            ]
+        )
 
-        if self.args.copy_workspace:
+        if self.args.autopts_mode == AutoPTSMode.GUI_CLIENT_ONLY:
+            report_data['pts_logs_folder'] = ''
+            report_data['pts_xml_folder'] = ''
+        elif self.args.copy_workspace:
             report_data['pts_logs_folder'], report_data['pts_xml_folder'] = \
                 report.pull_server_logs(self.args,
                                         self.file_paths['TMP_DIR'],
                                         self.file_paths['PTS_XMLS_DIR'])
 
-        report.make_report_xlsx(self.file_paths['REPORT_XLSX_FILE'],
-                                report_data['tc_results'],
-                                report_data['status_count'],
-                                report_data['regressions'],
-                                report_data['progresses'],
-                                report_data['descriptions'],
-                                getattr(report_data, 'pts_xml_folder', None),
-                                report_data['errata'])
+        report.make_report_xlsx(
+            self.file_paths["REPORT_XLSX_FILE"],
+            report_data["tc_results"],
+            report_data["status_count"],
+            report_data["regressions"],
+            report_data["progresses"],
+            report_data["descriptions"],
+            getattr(report_data, "pts_xml_folder", None),
+            report_data["known_issues"],
+        )
 
-        report.make_report_txt(self.file_paths['REPORT_TXT_FILE'],
-                               report_data['tc_results'],
-                               report_data['regressions'],
-                               report_data['progresses'],
-                               report_data['repo_status'],
-                               report_data['errata'])
+        report.make_report_txt(
+            self.file_paths["REPORT_TXT_FILE"],
+            report_data["tc_results"],
+            report_data["regressions"],
+            report_data["progresses"],
+            report_data["repo_status"],
+            report_data["known_issues"],
+        )
 
         if 'githubdrive' in self.bot_config or 'gdrive' in self.bot_config:
             self.make_report_folder(report_data)
@@ -1003,11 +1016,18 @@ class TestGroup:
         self.total = 0
         self.passed = 0
         self.failed = 0
-        self.pass_rate = 0.0
 
-    def get_pass_rate(self):
+    def get_pass_rate(self) -> float:
+        """
+        Get the pass rate in percentage (0.00 -> 100.00)
+
+        Returns:
+            float: Pass rate
+        """
         if self.total > 0:
-            self.pass_rate = (self.passed / float(self.total)) * 100
+            return (self.passed / float(self.total)) * 100.00
+        else:
+            return float(0.00)
 
 
 def get_tc_res_data(tc_results, test_groups):

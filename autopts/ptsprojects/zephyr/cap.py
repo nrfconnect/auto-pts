@@ -68,24 +68,13 @@ def set_pixits(ptses):
     pts.set_pixit("CAP", "TSPX_TARGET_LATENCY", "TARGET_BALANCED_LATENCY_RELIABILITY")
     pts.set_pixit("CAP", "TSPX_TARGET_PHY", "LE_2M_PHY")
     pts.set_pixit("CAP", "TSPX_Codec_ID", "0600000000")
-    pts.set_pixit("CAP", "TSPX_VS_Codec_Specific_Configuration", "0001")
-    pts.set_pixit("CAP", "TSPX_VS_QoS_Framing", "UNFRAMING")
-    pts.set_pixit("CAP", "TSPX_VS_QoS_PHY", "2M_PHY")
-    pts.set_pixit("CAP", "TSPX_VS_QoS_SDU_Interval", "64")
-    pts.set_pixit("CAP", "TSPX_VS_QoS_Max_SDU", "10000")
-    pts.set_pixit("CAP", "TSPX_VS_QoS_Retransmission_Number", "2")
-    pts.set_pixit("CAP", "TSPX_VS_QoS_Max_Transport_Latency", "40")
-    pts.set_pixit("CAP", "TSPX_VS_QoS_Presentation_Delay", "40000")
-    pts.set_pixit("CAP", "TSPX_VS_Company_ID", "0000")
-    pts.set_pixit("CAP", "TSPX_VS_Codec_ID", "0000")
     pts.set_pixit("CAP", "TSPX_METADATA_SELECTION", "USE_IXIT_VALUE_FOR_METADATA")
     pts.set_pixit("CAP", "TSPX_METADATA_SINK", "03020200")
     pts.set_pixit("CAP", "TSPX_METADATA_SOURCE", "03020200")
-    pts.set_pixit("CAP", "TSPX_broadcast_code", "0102680553F1415AA265BBAFC6EA03B8")
+    pts.set_pixit("CAP", "TSPX_Broadcast_Code", "0102680553F1415AA265BBAFC6EA03B8")
     pts.set_pixit("CAP", "TSPX_Sync_Timeout", "20000")
     pts.set_pixit("CAP", "TSPX_sirk", "838E680553F1415AA265BBAFC6EA03B8")
     pts.set_pixit("CAP", "TSPX_STREAMING_DATA_CONFIRMATION_METHOD", "By Playing")
-    pts.set_pixit("CAP", "TSPX_CONTEXT_TYPE", "0002")
     pts.set_pixit("CAP", "TSPX_Connection_Interval", "80")
     pts.set_pixit("CAP", "TSPX_Extended_Adv_Interval_min", "1200")
     pts.set_pixit("CAP", "TSPX_Extended_Adv_Interval_max", "1200")
@@ -119,12 +108,12 @@ def test_cases(ptses):
     pre_conditions = [
         TestFunc(btp.core_reg_svc_gap),
         TestFunc(stack.gap_init, iut_device_name),
-        TestFunc(btp.gap_read_ctrl_info),
+        TestFunc(btp.gap_read_controller_info),
         TestFunc(btp.core_reg_svc_gatt),
         TestFunc(btp.set_pts_addr, pts_bd_addr, Addr.le_public),
         TestFunc(stack.gatt_init),
-        TestFunc(btp.gap_set_conn),
-        TestFunc(btp.gap_set_gendiscov),
+        TestFunc(btp.gap_set_connectable),
+        TestFunc(btp.gap_set_general_discoverable),
         TestFunc(btp.core_reg_svc_mics),
         TestFunc(btp.core_reg_svc_vcs),
         TestFunc(btp.vcs_register, 1, False, 100),
@@ -182,7 +171,7 @@ def test_cases(ptses):
         TestFunc(gap_set_uuid16_svc_data, adv_data, UUID.ASCS,
                           struct.pack('<BHHB', BAPAnnouncement.GENERAL, SINK_CONTEXTS, SOURCE_CONTEXTS, 0)),
         TestFunc(announcements, adv_data),
-        TestFunc(btp.gap_adv_ind_on, ad=adv_data, sd=rsp_data),
+        TestFunc(btp.gap_start_advertising, ad=adv_data, sd=rsp_data),
     ]
 
     targeted_conditions = [
@@ -191,7 +180,7 @@ def test_cases(ptses):
         TestFunc(gap_set_uuid16_svc_data, adv_data, UUID.ASCS,
                           struct.pack('<BHHB', BAPAnnouncement.TARGETED, SINK_CONTEXTS, SOURCE_CONTEXTS, 0)),
         TestFunc(announcements, adv_data),
-        TestFunc(btp.gap_adv_ind_on, ad=adv_data, sd=rsp_data),
+        TestFunc(btp.gap_start_advertising, ad=adv_data, sd=rsp_data),
     ]
 
     custom_test_cases = [

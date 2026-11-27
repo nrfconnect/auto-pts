@@ -52,6 +52,7 @@ import wmi
 
 from autopts import ptscontrol
 from autopts.config import SERVER_PORT
+from autopts.types import PTSProxy
 from autopts.utils import (
     CounterWithFlag,
     active_hub_server_replug_usb,
@@ -432,7 +433,7 @@ def delete_workspaces():
     recursive(os.path.join(PROJECT_DIR, 'autopts/workspaces'), init_depth)
 
 
-class Server(threading.Thread):
+class Server(threading.Thread, PTSProxy):
     def __init__(self, finish_count, _args=None):
         init_logging(_args)
         threading.Thread.__init__(self, daemon=True)
@@ -625,10 +626,13 @@ class Server(threading.Thread):
         elif os.path.isdir(file_path):
             shutil.rmtree(file_path, ignore_errors=True)
 
-    def shutdown_pts_bpv(self):
+    def shutdown_pts_bpv(self, end_pts=True, end_bpv=True):
         self._update_request_time()
-        kill_all_processes('PTS.exe')
-        kill_all_processes('Fts.exe')
+        if end_pts:
+            kill_all_processes('PTS.exe')
+        if end_bpv:
+            kill_all_processes('Fts.exe')
+            kill_all_processes('Ellisys.BluetoothAnalyzer.exe')
 
 
 if __name__ == "__main__":

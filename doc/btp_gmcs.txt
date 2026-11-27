@@ -55,7 +55,7 @@ Commands and responses:
                          0x43 - Last Group
                          0x44 - Goto Group (uses Param)
 
-        Opcode 0x04 - Current Track Object ID Get
+        Opcode 0x03 - Current Track Object ID Get
 
                 Controller Index:       <controller id>
                 Command parameters:     <none>
@@ -63,7 +63,7 @@ Commands and responses:
 
                 This command is used to read Current Track Object ID.
 
-        Opcode 0x05 - Next Track Object ID Get
+        Opcode 0x04 - Next Track Object ID Get
 
                 Controller Index:       <controller id>
                 Command parameters:     <none>
@@ -71,7 +71,7 @@ Commands and responses:
 
                 This command is used to read Next Track Object ID.
 
-        Opcode 0x06 - Set Inactive State
+        Opcode 0x05 - Set Inactive State
 
                 Controller Index:       <controller id>
                 Command parameters:     <none>
@@ -79,10 +79,19 @@ Commands and responses:
 
                 Set media player into inactive state.
 
-        Opcode 0x07 - Set Parent Group
+        Opcode 0x06 - Set Parent Group
 
                 Controller Index:       <controller id>
                 Command parameters:     <none>
                 Response parameters:    <none>
 
                 Set Media Player's Current Group to be it's own Parent Group.
+
+        Opcode 0x07 - Set Player Name
+
+                Controller Index:      <controller id>
+                Command parameters:    Name length (1 octet)
+                                       Player Name (variable)
+                Response parameters:   <none>
+
+                Set the Media Player Name to the supplied UTF-8 string.

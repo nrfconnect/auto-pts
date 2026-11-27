@@ -33,7 +33,7 @@ def set_pixits(ptses):
 
     pts.set_pixit("PBP", "TSPX_time_guard", "180000")
     pts.set_pixit("PBP", "TSPX_use_implicit_send", "TRUE")
-    pts.set_pixit("PBP", "TSPX_broadcast_code", BROADCAST_CODE)
+    pts.set_pixit("PBP", "TSPX_Broadcast_Code", BROADCAST_CODE)
     pts.set_pixit("PBP", "TSPX_Program_Info", PROGRAM_INFO)
     pts.set_pixit("PBP", "TSPX_Broadcast_Name", BROADCAST_NAME)
 
@@ -58,11 +58,11 @@ def test_cases(ptses):
     pre_conditions = [
         TestFunc(btp.core_reg_svc_gap),
         TestFunc(stack.gap_init, iut_device_name),
-        TestFunc(btp.gap_read_ctrl_info),
+        TestFunc(btp.gap_read_controller_info),
         TestFunc(btp.core_reg_svc_gatt),
         TestFunc(btp.set_pts_addr, pts_bd_addr, Addr.le_public),
         TestFunc(stack.gatt_init),
-        TestFunc(btp.gap_set_conn),
+        TestFunc(btp.gap_set_connectable),
         TestFunc(btp.core_reg_svc_ascs),
         TestFunc(btp.core_reg_svc_bap),
         TestFunc(stack.ascs_init),

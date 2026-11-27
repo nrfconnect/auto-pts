@@ -177,11 +177,9 @@ def hdl_wid_44(params: WIDParams):
        current track to a track other than the first or last within a group
        of tracks."""
 
-    if params.test_case_name in ['GMCS/SR/MCP/BV-41-C', 'GMCS/SR/MCP/BV-45-C']:
-        # This applies only for testcases where media player is initially
-        # in inactive state
-        MEDIA_PROXY_OP_NEXT_TRACK = 0x31
-        btp.gmcs_control_point_cmd(MEDIA_PROXY_OP_NEXT_TRACK, 0)
+    MEDIA_PROXY_OP_GOTO_TRACK = 0x34
+
+    btp.gmcs_control_point_cmd(MEDIA_PROXY_OP_GOTO_TRACK, 1, 2)
 
     return True
 
@@ -222,8 +220,8 @@ def hdl_wid_20001(params: WIDParams):
         MEDIA_PROXY_OP_PLAY = 0x01
         btp.gmcs_control_point_cmd(MEDIA_PROXY_OP_PLAY, 0)
 
-    btp.gap_set_conn()
-    btp.gap_adv_ind_on(ad=stack.gap.ad)
+    btp.gap_set_connectable()
+    btp.gap_start_advertising(ad=stack.gap.ad)
 
     if params.test_case_name == "GMCS/SR/SP/BV-01-C":
         btp.gmcs_parent_group_set()
@@ -243,18 +241,20 @@ def hdl_wid_20141(params: WIDParams):
     """Please update Media Player Name/Track Title characteristic with value
        whose length is greater than the (ATT_MTU-3). Click OK when it is ready."""
 
-    # TODO: GMCS/SR/SPN/BV-01-C, GMCS/SR/SPN/BV-02-C
-    #  There is no way to do that with current API.
+    if params.test_case_name == 'GMCS/SR/SPN/BV-01-C':
+        btp.gmcs_player_name_set("Player Name Initial Value")
+        return True
 
     return False
 
 
 def hdl_wid_20142(params: WIDParams):
-    """Please update Track Title characteristic(Handle = 0x005E) and send a
+    """Please update Media Player Name/Track Title characteristic and send a
        notification containing the updated value of the characteristic with
        a different value whose length is greater than the (ATT_MTU-3)."""
 
-    # TODO: GMCS/SR/SPN/BV-01-C, GMCS/SR/SPN/BV-02-C
-    #  There is no way to do that with current API.
+    if params.test_case_name == 'GMCS/SR/SPN/BV-01-C':
+        btp.gmcs_player_name_set("Player Name Updated Value")
+        return True
 
     return False

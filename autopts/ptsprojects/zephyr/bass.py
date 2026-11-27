@@ -52,7 +52,7 @@ def set_pixits(ptses):
     pts.set_pixit("BASS", "TSPX_delete_ltk", "TRUE")
     pts.set_pixit("BASS", "TSPX_security_enabled", "FALSE")
     pts.set_pixit("BASS", "TSPX_iut_ATT_transport", "ATT Bearer on LE Transport")
-    pts.set_pixit("BASS", "TSPX_broadcast_code", broadcast_code)
+    pts.set_pixit("BASS", "TSPX_Broadcast_Code", broadcast_code)
     pts.set_pixit("BASS", "TSPX_Sync_Timeout", "8000")
 
     if len(ptses) < 2:
@@ -71,7 +71,7 @@ def set_pixits(ptses):
     pts2.set_pixit("BASS", "TSPX_delete_ltk", "TRUE")
     pts2.set_pixit("BASS", "TSPX_security_enabled", "FALSE")
     pts2.set_pixit("BASS", "TSPX_iut_ATT_transport", "ATT Bearer on LE Transport")
-    pts2.set_pixit("BASS", "TSPX_broadcast_code", broadcast_code)
+    pts2.set_pixit("BASS", "TSPX_Broadcast_Code", broadcast_code)
     pts.set_pixit("BASS", "TSPX_Sync_Timeout", "8000")
 
 
@@ -103,15 +103,15 @@ def test_cases(ptses):
 
     pre_conditions = [TestFunc(btp.core_reg_svc_gap),
                       TestFunc(stack.gap_init, iut_device_name),
-                      TestFunc(btp.gap_read_ctrl_info),
+                      TestFunc(btp.gap_read_controller_info),
                       TestFunc(lambda: pts.update_pixit_param(
                           "BASS", "TSPX_bd_addr_iut",
                           stack.gap.iut_addr_get_str())),
                       TestFunc(btp.core_reg_svc_gatt),
                       TestFunc(btp.set_pts_addr, pts_bd_addr, Addr.le_public),
                       TestFunc(stack.gatt_init),
-                      TestFunc(btp.gap_set_conn),
-                      TestFunc(btp.gap_set_gendiscov),
+                      TestFunc(btp.gap_set_connectable),
+                      TestFunc(btp.gap_set_general_discoverable),
                       TestFunc(btp.core_reg_svc_pacs),
                       TestFunc(btp.core_reg_svc_ascs),
                       TestFunc(btp.core_reg_svc_bap),

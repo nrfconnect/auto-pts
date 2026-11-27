@@ -44,9 +44,9 @@ def hdl_wid_1(_: WIDParams):
     can accept GATT connect request from PTS.
     """
     stack = get_stack()
-    btp.gap_set_conn()
-    btp.gap_set_gendiscov()
-    btp.gap_adv_ind_on(ad=stack.gap.ad)
+    btp.gap_set_connectable()
+    btp.gap_set_general_discoverable()
+    btp.gap_start_advertising(ad=stack.gap.ad)
     return True
 
 
@@ -57,7 +57,7 @@ def hdl_wid_2(_: WIDParams):
     Description: Verify that the Implementation Under Test (IUT) can
     initiate GATT connect request to PTS.
     """
-    btp.gap_conn()
+    btp.gap_connect()
     return True
 
 
@@ -68,7 +68,7 @@ def hdl_wid_3(_: WIDParams):
     Description: Verify that the Implementation Under Test (IUT) can
     initiate GATT disconnect request to PTS.
     """
-    btp.gap_disconn(btp.pts_addr_get(), btp.pts_addr_type_get())
+    btp.gap_disconnect(btp.pts_addr_get(), btp.pts_addr_type_get())
     return get_stack().gap.wait_for_disconnection(30)
 
 
@@ -80,7 +80,7 @@ def hdl_wid_4(_: WIDParams):
     that no authentication or authorization procedure has been performed
     between the IUT and the test system.
     """
-    btp.gap_set_io_cap(IOCap.no_input_output)
+    btp.gap_set_io_capability(IOCap.no_input_output)
     return True
 
 
@@ -484,8 +484,14 @@ def hdl_wid_35(params: WIDParams):
 
     stack.gatt_cl.wait_for_rsp_event()
 
-    for attr in to_verify:
-        if attr not in stack.gatt_cl.verify_values:
+    for exp_handle, exp_val in to_verify:
+        match = False
+        for act_handle, act_val in stack.gatt_cl.verify_values:
+            if act_handle == exp_handle and act_val.startswith(exp_val):
+                match = True
+                break
+
+        if not match:
             result = False
 
     btp.clear_verify_values()
@@ -1281,6 +1287,15 @@ def hdl_wid_109(params: WIDParams):
     return True
 
 
+def hdl_wid_130(_: WIDParams):
+    """
+    Please delete security key before connecting to PTS if IUT was bonded previously.
+    """
+    btp.gap_unpair()
+
+    return True
+
+
 def hdl_wid_140(params: WIDParams):
     """
     Please send Read Multiple Variable Length characteristic requests on the "ATT" using these handles:
@@ -1329,6 +1344,23 @@ def hdl_wid_147(params: WIDParams):
     hdl1 = MMI.args[0]
     hdl2 = MMI.args[1]
 
+    btp.gatt_cl_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
+    btp.gatt_cl_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
+    return True
+
+
+def hdl_wid_148(params: WIDParams):
+    """
+    Please send two Read Multiple Variable Length characteristic requests using these handles: 'XXXX'O 'XXXX'O
+    Required Bearers are "EATT" bearers.
+
+    Description: Verify that the Implementation Under Test (IUT) can receive multiple characteristics.
+    """
+    MMI.reset()
+    MMI.parse_description(params.description)
+
+    hdl1 = MMI.args[0]
+    hdl2 = MMI.args[1]
     btp.gatt_cl_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
     btp.gatt_cl_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
     return True
